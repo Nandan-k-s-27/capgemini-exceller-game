@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import GameShell from '../../components/shared/GameShell';
 import { motion } from 'framer-motion';
-import { Square, Triangle, Circle, Plus, Hexagon, Star } from 'lucide-react';
+import { Square, Triangle, Circle, Plus } from 'lucide-react';
 
 const SHAPES = [
     { id: 'square', icon: Square, color: 'text-red-500' },
@@ -17,12 +17,14 @@ const SwitchChallenge = () => {
     const [outputSeq, setOutputSeq] = useState([]);
     const [options, setOptions] = useState([]);
     const [correctOption, setCorrectOption] = useState('');
+    const [feedback, setFeedback] = useState(null);
 
     useEffect(() => {
         generateLevel();
     }, [level]);
 
     const generateLevel = () => {
+        setFeedback(null);
         // 1. Generate random input sequence (4 shapes)
         // We shuffle the SHAPES array
         const shuffledShapes = [...SHAPES].sort(() => Math.random() - 0.5);
@@ -52,14 +54,11 @@ const SwitchChallenge = () => {
 
     const handleOptionClick = (opt) => {
         if (opt === correctOption) {
+            setFeedback('correct');
             submitAnswer(true);
         } else {
             submitAnswer(false); // Or handle wrong answer feedback
-            // For now, just regenerate to keep game flowing or show error
-            // Ideally show error then next level
-            // But submitAnswer(false) doesn't advance level in our context yet
-            // Let's just flash error
-            alert('Wrong!');
+            setFeedback('wrong');
         }
     };
 
@@ -147,6 +146,12 @@ const SwitchChallenge = () => {
                         </button>
                     ))}
                 </div>
+
+                {feedback && (
+                    <div className={`text-sm font-semibold ${feedback === 'correct' ? 'text-emerald-600' : 'text-red-500'}`}>
+                        {feedback === 'correct' ? 'Correct pattern!' : 'Incorrect pattern. Try another option.'}
+                    </div>
+                )}
 
             </div>
         </GameShell>

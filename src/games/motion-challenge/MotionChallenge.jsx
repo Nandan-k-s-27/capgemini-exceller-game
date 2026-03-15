@@ -1,15 +1,62 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useGame } from '../../context/GameContext';
 import GameShell from '../../components/shared/GameShell';
-import { motion } from 'framer-motion';
-import { Circle, Square, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
+
+const LEVELS = [
+    // Level 1: Intro (The Box)
+    [
+        [1, 1, 1, 1, 1, 1],
+        [1, 3, 0, 2, 0, 1],
+        [1, 0, 1, 2, 0, 1],
+        [1, 0, 2, 0, 0, 1],
+        [1, 0, 1, 0, 4, 1],
+        [1, 1, 1, 1, 1, 1],
+    ],
+    // Level 2: The Corridor
+    [
+        [1, 1, 1, 1, 1, 1],
+        [1, 3, 0, 0, 1, 1],
+        [1, 1, 2, 0, 0, 1],
+        [1, 1, 0, 2, 0, 1],
+        [1, 1, 0, 0, 4, 1],
+        [1, 1, 1, 1, 1, 1],
+    ],
+    // Level 3: Two Rooms
+    [
+        [1, 1, 1, 1, 1, 1],
+        [1, 3, 0, 1, 0, 1],
+        [1, 2, 2, 1, 0, 1],
+        [1, 0, 0, 0, 0, 1], // Gap in wall
+        [1, 0, 1, 4, 0, 1],
+        [1, 1, 1, 1, 1, 1],
+    ],
+    // Level 4: The Squeeze
+    [
+        [1, 1, 1, 1, 1, 1],
+        [1, 3, 2, 0, 2, 1],
+        [1, 0, 1, 0, 1, 1],
+        [1, 0, 2, 0, 0, 1],
+        [1, 0, 1, 2, 4, 1],
+        [1, 1, 1, 1, 1, 1],
+    ],
+    // Level 5: Open Field
+    [
+        [1, 1, 1, 1, 1, 1],
+        [1, 3, 0, 2, 0, 1],
+        [1, 0, 0, 2, 0, 1],
+        [1, 2, 0, 0, 2, 1],
+        [1, 0, 2, 4, 0, 1],
+        [1, 1, 1, 1, 1, 1],
+    ]
+];
 
 const MotionChallenge = () => {
     const { level, submitAnswer } = useGame();
     const [grid, setGrid] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null); // {r, c}
     const [moves, setMoves] = useState(0);
-    const [minMoves, setMinMoves] = useState(10); // Placeholder
+    const minMoves = 10; // Placeholder
 
     // Grid Codes:
     // 0: Empty
@@ -21,59 +68,7 @@ const MotionChallenge = () => {
     // Grid Codes:
     // 0: Empty, 1: Wall, 2: Block, 3: Ball, 4: Hole
 
-    const LEVELS = [
-        // Level 1: Intro (The Box)
-        [
-            [1, 1, 1, 1, 1, 1],
-            [1, 3, 0, 2, 0, 1],
-            [1, 0, 1, 2, 0, 1],
-            [1, 0, 2, 0, 0, 1],
-            [1, 0, 1, 0, 4, 1],
-            [1, 1, 1, 1, 1, 1],
-        ],
-        // Level 2: The Corridor
-        [
-            [1, 1, 1, 1, 1, 1],
-            [1, 3, 0, 0, 1, 1],
-            [1, 1, 2, 0, 0, 1],
-            [1, 1, 0, 2, 0, 1],
-            [1, 1, 0, 0, 4, 1],
-            [1, 1, 1, 1, 1, 1],
-        ],
-        // Level 3: Two Rooms
-        [
-            [1, 1, 1, 1, 1, 1],
-            [1, 3, 0, 1, 0, 1],
-            [1, 2, 2, 1, 0, 1],
-            [1, 0, 0, 0, 0, 1], // Gap in wall
-            [1, 0, 1, 4, 0, 1],
-            [1, 1, 1, 1, 1, 1],
-        ],
-        // Level 4: The Squeeze
-        [
-            [1, 1, 1, 1, 1, 1],
-            [1, 3, 2, 0, 2, 1],
-            [1, 0, 1, 0, 1, 1],
-            [1, 0, 2, 0, 0, 1],
-            [1, 0, 1, 2, 4, 1],
-            [1, 1, 1, 1, 1, 1],
-        ],
-        // Level 5: Open Field
-        [
-            [1, 1, 1, 1, 1, 1],
-            [1, 3, 0, 2, 0, 1],
-            [1, 0, 0, 2, 0, 1],
-            [1, 2, 0, 0, 2, 1],
-            [1, 0, 2, 4, 0, 1],
-            [1, 1, 1, 1, 1, 1],
-        ]
-    ];
-
-    useEffect(() => {
-        loadLevel();
-    }, [level]);
-
-    const loadLevel = () => {
+    const loadLevel = useCallback(() => {
         // Select level template based on current game level (cycling)
         const levelIndex = (level - 1) % LEVELS.length;
         // Deep copy the grid to avoid mutating the template
@@ -83,7 +78,11 @@ const MotionChallenge = () => {
         setGrid(newGrid);
         setMoves(0);
         setSelectedItem(null);
-    };
+    }, [level]);
+
+    useEffect(() => {
+        loadLevel();
+    }, [loadLevel]);
 
     const handleCellClick = (r, c) => {
         const val = grid[r][c];

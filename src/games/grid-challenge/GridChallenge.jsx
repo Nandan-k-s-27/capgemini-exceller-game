@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useGame } from '../../context/GameContext';
 import GameShell from '../../components/shared/GameShell';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X } from 'lucide-react';
 
 const GridChallenge = () => {
     const { level, submitAnswer } = useGame();
@@ -18,11 +16,14 @@ const GridChallenge = () => {
     const gridSize = 4 + Math.floor(level / 3); // Increase grid size every 3 levels
     const sequenceLength = 2 + Math.floor(level / 2); // Increase sequence length
 
-    useEffect(() => {
-        startLevel();
-    }, [level]);
+    const generateSymmetryTask = useCallback(() => {
+        // Simple random symmetry task
+        // For MVP, we'll use a placeholder or simple CSS shape
+        const isSym = Math.random() > 0.5;
+        setSymmetryTask({ isSymmetric: isSym });
+    }, []);
 
-    const startLevel = () => {
+    const startLevel = useCallback(() => {
         // Generate full sequence of dots
         const newSeq = [];
         for (let i = 0; i < sequenceLength; i++) {
@@ -35,7 +36,11 @@ const GridChallenge = () => {
         setCurrentStep(0);
         setUserSequence([]);
         setPhase('MEMORIZE');
-    };
+    }, [gridSize, sequenceLength]);
+
+    useEffect(() => {
+        startLevel();
+    }, [startLevel]);
 
     // Phase Management
     useEffect(() => {
@@ -47,14 +52,7 @@ const GridChallenge = () => {
             }, 2000); // Show dot for 2 seconds
         }
         return () => clearTimeout(timer);
-    }, [phase, currentStep]);
-
-    const generateSymmetryTask = () => {
-        // Simple random symmetry task
-        // For MVP, we'll use a placeholder or simple CSS shape
-        const isSym = Math.random() > 0.5;
-        setSymmetryTask({ isSymmetric: isSym });
-    };
+    }, [phase, generateSymmetryTask]);
 
     const handleSymmetryAnswer = (answer) => {
         // Check symmetry answer

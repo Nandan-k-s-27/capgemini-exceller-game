@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import GameShell from '../../components/shared/GameShell';
-import { motion } from 'framer-motion';
-import { Circle, Square, Triangle, Star, Hexagon } from 'lucide-react';
+import { Circle, Square } from 'lucide-react';
 
 const ArrowIcon = ({ rotation, ...props }) => (
     <svg
@@ -16,34 +15,6 @@ const ArrowIcon = ({ rotation, ...props }) => (
     </svg>
 );
 
-const QUESTIONS = [
-    {
-        id: 1,
-        rule: "Rotation",
-        options: [
-            { id: 'A', rotation: 0, icon: ArrowIcon },
-            { id: 'B', rotation: 90, icon: ArrowIcon },
-            { id: 'C', rotation: 180, icon: ArrowIcon },
-            { id: 'D', rotation: 45, icon: ArrowIcon }, // Odd one (45 deg vs 90 deg steps)
-            { id: 'E', rotation: 270, icon: ArrowIcon },
-        ],
-        correct: 'D'
-    },
-    {
-        id: 2,
-        rule: "Shape Count",
-        options: [
-            { id: 'A', count: 3, icon: Circle },
-            { id: 'B', count: 3, icon: Square },
-            { id: 'C', count: 4, icon: Triangle }, // Odd one (4 items)
-            { id: 'D', count: 3, icon: Star },
-            { id: 'E', count: 3, icon: Hexagon },
-        ],
-        correct: 'C'
-    },
-    // Add more patterns...
-];
-
 const InductiveReasoning = () => {
     const { level, submitAnswer } = useGame();
     const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -51,10 +22,6 @@ const InductiveReasoning = () => {
     useEffect(() => {
         // Pick a random question or generate one
         // For MVP, we cycle or pick random
-        const q = QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)];
-        // We need to deep copy or regenerate to avoid stale state if we modify it
-        // But here it's static config
-
         // Let's generate a procedural one for "Rotation" to make it infinite
         if (Math.random() > 0.5) {
             generateRotationQuestion();

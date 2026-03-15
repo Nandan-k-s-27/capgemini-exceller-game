@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useGame } from '../../context/GameContext';
 import GameShell from '../../components/shared/GameShell';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,34 +8,47 @@ const DigitChallenge = () => {
     const { level, submitAnswer } = useGame();
     const [equation, setEquation] = useState([]);
     const [userInputs, setUserInputs] = useState({});
-    const [availableDigits, setAvailableDigits] = useState([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     const [feedback, setFeedback] = useState(null); // 'correct' | 'wrong'
 
-    // Generate Equation based on Level
-    useEffect(() => {
-        generateLevel();
-    }, [level]);
+    const evaluateExpression = useCallback((parts) => {
+        // First pass handles multiplication/division, second pass handles addition/subtraction.
+        const tokens = [...parts];
+        const collapsed = [];
 
-    const getUsedDigits = (parts, inputs = {}) => {
-        const used = new Set();
-        const addDigits = (n) => String(n).split('').forEach(d => used.add(Number(d)));
+        for (let i = 0; i < tokens.length; i++) {
+            const token = tokens[i];
 
-        parts.forEach((part, idx) => {
-            if (typeof part === 'number' && !inputs.hasOwnProperty(idx)) { // Check if it's a fixed number (not user input slot)
-                // Actually, inputs key check is tricky because missingIndices is not passed here easiest way is to pass missingIndices
+            if ((token === '×' || token === '÷') && collapsed.length > 0 && i + 1 < tokens.length) {
+                const left = collapsed.pop();
+                const right = tokens[i + 1];
+                const value = token === '×' ? left * right : left / right;
+                collapsed.push(value);
+                i += 1;
+            } else {
+                collapsed.push(token);
             }
-        });
-        return used;
-    };
+        }
+
+        let result = collapsed[0];
+        for (let i = 1; i < collapsed.length; i += 2) {
+            const operator = collapsed[i];
+            const value = collapsed[i + 1];
+
+            if (operator === '+') result += value;
+            if (operator === '-') result -= value;
+        }
+
+        return result;
+    }, []);
 
     // Helper to check uniqueness during generation
-    const checkUnique = (nums) => {
+    const checkUnique = useCallback((nums) => {
         const str = nums.join('');
         const unique = new Set(str.split(''));
         return unique.size === str.length;
-    };
+    }, []);
 
-    const generateLevel = () => {
+    const generateLevel = useCallback(() => {
         setUserInputs({});
         setFeedback(null);
 
@@ -62,7 +75,6 @@ const DigitChallenge = () => {
                     isValid = true;
                 }
             } else if (level <= 5) {
-                const ops = ['+', '-', '×'];
                 // Simplified for guaranteed solvability: A * B + C or similar
                 // Let's stick to the previous pattern but check unique
                 const a = Math.floor(Math.random() * 9) + 1;
@@ -97,7 +109,12 @@ const DigitChallenge = () => {
         }
 
         setEquation({ parts, missingIndices });
-    };
+    }, [checkUnique, level]);
+
+    // Generate Equation based on Level
+    useEffect(() => {
+        generateLevel();
+    }, [generateLevel]);
 
     // Calculate used digits for UI
     const usedDigits = useMemo(() => {
@@ -132,10 +149,6 @@ const DigitChallenge = () => {
         }
     };
 
-    const handleClear = () => {
-        setUserInputs({});
-    };
-
     const handleBackspace = () => {
         const filledIndices = Object.keys(userInputs).map(Number).sort((a, b) => b - a);
         if (filledIndices.length > 0) {
@@ -158,17 +171,12 @@ const DigitChallenge = () => {
 
         if (!isComplete) return;
 
-        // Evaluate
-        // Replace visual operators with JS operators
-        const evalString = filledParts.slice(0, filledParts.indexOf('=')).join(' ')
-            .replace(/×/g, '*')
-            .replace(/÷/g, '/');
+        const expressionParts = filledParts.slice(0, filledParts.indexOf('='));
 
         const target = filledParts[filledParts.length - 1];
 
         try {
-            // eslint-disable-next-line no-eval
-            const result = eval(evalString);
+            const result = evaluateExpression(expressionParts);
             if (result === target) {
                 setFeedback('correct');
                 setTimeout(() => submitAnswer(true), 1000);

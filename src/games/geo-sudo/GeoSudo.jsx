@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useGame } from '../../context/GameContext';
 import GameShell from '../../components/shared/GameShell';
 import { motion } from 'framer-motion';
@@ -20,15 +20,52 @@ const GeoSudo = () => {
     const [size, setSize] = useState(4);
     const [selectedCell, setSelectedCell] = useState(null);
 
-    useEffect(() => {
-        // Level 1-3: 4x4
-        // Level 4+: 5x5 (Not implemented fully, sticking to 4x4 for demo)
-        const newSize = 4;
-        setSize(newSize);
-        generateLevel(newSize);
-    }, [level]);
+    const isValid = useCallback((board, r, c, num, s) => {
+        // Check row
+        for (let i = 0; i < s; i++) if (board[r][i] === num) return false;
+        // Check col
+        for (let i = 0; i < s; i++) if (board[i][c] === num) return false;
+        // No subgrid check for 4x4 in this simplified version (usually 2x2 blocks, but GeoSudo often just Row/Col)
+        // If we want 2x2 blocks:
+        const blockSize = Math.sqrt(s);
+        if (Number.isInteger(blockSize)) {
+            const boxRow = Math.floor(r / blockSize) * blockSize;
+            const boxCol = Math.floor(c / blockSize) * blockSize;
+            for (let i = 0; i < blockSize; i++) {
+                for (let j = 0; j < blockSize; j++) {
+                    if (board[boxRow + i][boxCol + j] === num) return false;
+                }
+            }
+        }
+        return true;
+    }, []);
 
-    const generateLevel = (s) => {
+    const solve = useCallback((board, s) => {
+        for (let r = 0; r < s; r++) {
+            for (let c = 0; c < s; c++) {
+                if (board[r][c] === 0) {
+                    const nums = [1, 2, 3, 4].sort(() => Math.random() - 0.5);
+                    for (let num of nums) {
+                        if (isValid(board, r, c, num, s)) {
+                            board[r][c] = num;
+                            if (solve(board, s)) return true;
+                            board[r][c] = 0;
+                        }
+                    }
+                    return false;
+                }
+            }
+        }
+        return true;
+    }, [isValid]);
+
+    const createSolvedGrid = useCallback((s) => {
+        const board = Array(s).fill().map(() => Array(s).fill(0));
+        solve(board, s);
+        return board;
+    }, [solve]);
+
+    const generateLevel = useCallback((s) => {
         // Simple backtracking to generate valid grid
         const fullGrid = createSolvedGrid(s);
 
@@ -52,52 +89,15 @@ const GeoSudo = () => {
         setGrid(newGrid);
         setInitialGrid(mask);
         setSelectedCell(null);
-    };
+    }, [createSolvedGrid, level]);
 
-    const createSolvedGrid = (s) => {
-        const board = Array(s).fill().map(() => Array(s).fill(0));
-        solve(board, s);
-        return board;
-    };
-
-    const solve = (board, s) => {
-        for (let r = 0; r < s; r++) {
-            for (let c = 0; c < s; c++) {
-                if (board[r][c] === 0) {
-                    const nums = [1, 2, 3, 4].sort(() => Math.random() - 0.5);
-                    for (let num of nums) {
-                        if (isValid(board, r, c, num, s)) {
-                            board[r][c] = num;
-                            if (solve(board, s)) return true;
-                            board[r][c] = 0;
-                        }
-                    }
-                    return false;
-                }
-            }
-        }
-        return true;
-    };
-
-    const isValid = (board, r, c, num, s) => {
-        // Check row
-        for (let i = 0; i < s; i++) if (board[r][i] === num) return false;
-        // Check col
-        for (let i = 0; i < s; i++) if (board[i][c] === num) return false;
-        // No subgrid check for 4x4 in this simplified version (usually 2x2 blocks, but GeoSudo often just Row/Col)
-        // If we want 2x2 blocks:
-        const blockSize = Math.sqrt(s);
-        if (Number.isInteger(blockSize)) {
-            const boxRow = Math.floor(r / blockSize) * blockSize;
-            const boxCol = Math.floor(c / blockSize) * blockSize;
-            for (let i = 0; i < blockSize; i++) {
-                for (let j = 0; j < blockSize; j++) {
-                    if (board[boxRow + i][boxCol + j] === num) return false;
-                }
-            }
-        }
-        return true;
-    };
+    useEffect(() => {
+        // Level 1-3: 4x4
+        // Level 4+: 5x5 (Not implemented fully, sticking to 4x4 for demo)
+        const newSize = 4;
+        setSize(newSize);
+        generateLevel(newSize);
+    }, [level, generateLevel]);
 
     const handleCellClick = (r, c) => {
         if (!initialGrid[r][c]) {

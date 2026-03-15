@@ -11,22 +11,134 @@ This project provides a structured game shell with timer, scoring, level progres
 - Maintain reusable game architecture through shared context and shell components.
 - Track core performance metrics like score and level progression.
 
-## Game Suite (7 Games)
+## Latest Updates (March 2026)
 
-1. **Digit Challenge**  
-   Fill missing digits in equations while preserving uniqueness constraints.
-2. **Switch Challenge**  
-   Decode shape-transformation mappings and identify the correct permutation code.
-3. **Geo-Sudo**  
-   Solve a shape-based Sudoku-like grid using row/column (and block) validity rules.
-4. **Grid Challenge**  
-   Memorize position sequences, survive distraction tasks, and recall in order.
-5. **Motion Challenge**  
-   Move blocks/ball strategically to guide the red ball into the target hole.
-6. **Inductive Reasoning**  
-   Find the odd one out from generated rule-based visual patterns.
-7. **Color the Grid**  
-   Apply conditional logic rules and assign correct colors to mini-grids.
+- Improved lint coverage for `.js/.jsx` and React files by expanding ESLint configuration.
+- Removed unsafe runtime expression evaluation from Digit Challenge and replaced it with safe deterministic evaluation.
+- Replaced blocking browser `alert()` flows with inline, non-blocking game feedback.
+- Refactored hook usage with stable callbacks and dependency-safe effects.
+- Fixed `tsconfig.app.json` input detection for this JSX project by enabling JS includes.
+- Performed a code cleanup pass to remove dead code and unused imports/state.
+
+## Game Suite Overview
+
+This assessment simulator includes **7 game modules**, each designed to target a different cognitive skill used in aptitude-style testing.
+
+1. **Digit Challenge**: Missing-digit arithmetic and constraint handling.
+2. **Switch Challenge**: Visual transformation mapping and permutation decoding.
+3. **Geo-Sudo**: Sudoku-style symbol placement with row/column uniqueness.
+4. **Grid Challenge**: Working memory under distraction and ordered recall.
+5. **Motion Challenge**: Spatial planning and move optimization.
+6. **Inductive Reasoning**: Pattern-break detection and abstract logic.
+7. **Color the Grid**: Rule-based classification and fast condition checking.
+
+## Detailed Game Breakdown
+
+### 1) Digit Challenge
+
+**What you do**
+- Fill missing digits in arithmetic equations (e.g., addition/multiplication combinations).
+- Use each digit under uniqueness constraints in the active puzzle state.
+
+**How difficulty scales**
+- Early levels focus on single missing slots.
+- Mid levels combine operations and multiple missing positions.
+- Higher levels increase missing slots and equation complexity.
+
+**What it tests**
+- Arithmetic speed
+- Accuracy under constraints
+- Mental verification
+
+### 2) Switch Challenge
+
+**What you do**
+- Compare an input sequence of shapes with its transformed output sequence.
+- Choose the correct 4-digit permutation code that explains the reorder.
+
+**How difficulty scales**
+- Core mechanic remains consistent.
+- Pressure comes from speed, misdirection, and similar distractor options.
+
+**What it tests**
+- Mapping logic
+- Pattern translation
+- Rapid option elimination
+
+### 3) Geo-Sudo
+
+**What you do**
+- Fill symbol grids using Sudoku-like constraints.
+- Ensure each row/column has unique shapes with no duplicates.
+
+**How difficulty scales**
+- More cells are masked as level increases.
+- Fewer fixed hints force stronger deduction.
+
+**What it tests**
+- Constraint satisfaction
+- Visual deduction
+- Error avoidance
+
+### 4) Grid Challenge
+
+**What you do**
+- Memorize dot positions one-by-one.
+- Answer an interleaved symmetry distraction prompt.
+- Recall all dot positions in the original order.
+
+**How difficulty scales**
+- Grid size and sequence length increase with level.
+
+**What it tests**
+- Working memory
+- Attention switching
+- Ordered recall under interference
+
+### 5) Motion Challenge
+
+**What you do**
+- Select and move pieces on a bounded board.
+- Clear blocking paths and route the red ball into the target hole.
+
+**How difficulty scales**
+- Rotates through progressively tricky level templates.
+- Efficiency pressure encourages lower move counts.
+
+**What it tests**
+- Spatial reasoning
+- Planning ahead
+- Move optimization
+
+### 6) Inductive Reasoning
+
+**What you do**
+- Inspect a set of visual options.
+- Identify the item that breaks the hidden rule.
+
+**How difficulty scales**
+- Procedural question generation changes rule forms (rotation/count patterns).
+- Reduced predictability prevents rote memorization.
+
+**What it tests**
+- Abstract reasoning
+- Rule inference
+- Exception spotting
+
+### 7) Color the Grid
+
+**What you do**
+- Read the active rule statement.
+- Analyze each mini-grid and apply the correct color label.
+
+**How difficulty scales**
+- Rules alternate by content type (letters/numbers).
+- Correctness depends on exact condition matching.
+
+**What it tests**
+- Conditional logic
+- Classification speed
+- Rule adherence
 
 ## Core Features
 
@@ -184,7 +296,7 @@ npm run lint
 
 - Persist high scores and session history (local storage or backend).
 - Add per-game analytics and detailed result breakdown.
-- Replace `alert()` feedback with non-blocking toast notifications.
+- Add reusable toast/snackbar system for richer feedback patterns.
 - Improve puzzle generation depth and adaptive difficulty curves.
 - Add sound design and accessibility enhancements.
 - Add automated tests for game logic and context state transitions.

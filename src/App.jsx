@@ -1,4 +1,3 @@
-import React from 'react';
 import { GameProvider, useGame } from './context/GameContext';
 import DigitChallenge from './games/digit-challenge/DigitChallenge';
 import SwitchChallenge from './games/switch-challenge/SwitchChallenge';

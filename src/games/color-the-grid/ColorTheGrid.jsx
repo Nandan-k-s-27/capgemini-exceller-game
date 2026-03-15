@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useGame } from '../../context/GameContext';
 import GameShell from '../../components/shared/GameShell';
-import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
 
 const COLORS = [
     { id: 'orange', class: 'bg-orange-500', name: 'Orange' },
@@ -17,12 +15,26 @@ const ColorTheGrid = () => {
     const [rule, setRule] = useState(null);
     const [selectedColor, setSelectedColor] = useState(COLORS[0].id);
     const [userColors, setUserColors] = useState({}); // { gridIndex: colorId }
+    const [feedback, setFeedback] = useState(null);
 
-    useEffect(() => {
-        generateLevel();
-    }, [level]);
+    const generateGridContent = useCallback(() => {
+        // 4 items per grid (2x2)
+        const content = [];
+        for (let i = 0; i < 4; i++) {
+            if (Math.random() > 0.5) {
+                // Number
+                content.push(Math.floor(Math.random() * 9) + 1);
+            } else {
+                // Letter
+                const chars = 'ABCXYZ';
+                content.push(chars[Math.floor(Math.random() * chars.length)]);
+            }
+        }
+        return content;
+    }, []);
 
-    const generateLevel = () => {
+    const generateLevel = useCallback(() => {
+        setFeedback(null);
         // Generate 4 grids
         const newGrids = [];
         for (let i = 0; i < 4; i++) {
@@ -51,23 +63,11 @@ const ColorTheGrid = () => {
                 }
             });
         }
-    };
+    }, [generateGridContent]);
 
-    const generateGridContent = () => {
-        // 4 items per grid (2x2)
-        const content = [];
-        for (let i = 0; i < 4; i++) {
-            if (Math.random() > 0.5) {
-                // Number
-                content.push(Math.floor(Math.random() * 9) + 1);
-            } else {
-                // Letter
-                const chars = "ABCXYZ";
-                content.push(chars[Math.floor(Math.random() * chars.length)]);
-            }
-        }
-        return content;
-    };
+    useEffect(() => {
+        generateLevel();
+    }, [level, generateLevel]);
 
     const handleGridClick = (index) => {
         setUserColors(prev => ({ ...prev, [index]: selectedColor }));
@@ -85,10 +85,11 @@ const ColorTheGrid = () => {
         }
 
         if (correct) {
+            setFeedback('correct');
             submitAnswer(true);
         } else {
             submitAnswer(false);
-            alert('Incorrect coloring!');
+            setFeedback('wrong');
         }
     };
 
@@ -98,7 +99,7 @@ const ColorTheGrid = () => {
         {
             title: "Read the Rule",
             desc: "A specific rule will be displayed at the top. Read it carefully.",
-            visual: <div className="p-2 bg-blue-50 text-blue-800 text-xs font-bold border border-blue-200 rounded text-center">"If grid has 'Z', mark Orange. Else mark Blue."</div>
+            visual: <div className="p-2 bg-blue-50 text-blue-800 text-xs font-bold border border-blue-200 rounded text-center">&quot;If grid has &apos;Z&apos;, mark Orange. Else mark Blue.&quot;</div>
         },
         {
             title: "Analyze Each Grid",
@@ -175,6 +176,12 @@ const ColorTheGrid = () => {
                 >
                     Submit Colors
                 </button>
+
+                {feedback && (
+                    <div className={`text-sm font-semibold ${feedback === 'correct' ? 'text-emerald-600' : 'text-red-500'}`}>
+                        {feedback === 'correct' ? 'Perfect coloring!' : 'Incorrect coloring. Re-check the rule and try again.'}
+                    </div>
+                )}
 
             </div>
         </GameShell>

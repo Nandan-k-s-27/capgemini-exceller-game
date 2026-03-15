@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const GameContext = createContext();
 
@@ -16,7 +16,10 @@ export const GameProvider = ({ children }) => {
     const [level, setLevel] = useState(1);
     const [timeLeft, setTimeLeft] = useState(0);
     const [currentGameId, setCurrentGameId] = useState(null);
-    const [gameConfig, setGameConfig] = useState(null);
+
+    const endGame = useCallback(() => {
+        setGameState('GAME_OVER');
+    }, []);
 
     // Timer Logic
     useEffect(() => {
@@ -33,19 +36,14 @@ export const GameProvider = ({ children }) => {
             }, 1000);
         }
         return () => clearInterval(timer);
-    }, [gameState, timeLeft]);
+    }, [gameState, timeLeft, endGame]);
 
     const startGame = useCallback((id, config = {}) => {
         setCurrentGameId(id);
-        setGameConfig(config);
         setScore(0);
         setLevel(1);
         setTimeLeft(config.duration || 360); // Default 6 mins
         setGameState('PLAYING');
-    }, []);
-
-    const endGame = useCallback(() => {
-        setGameState('GAME_OVER');
     }, []);
 
     const submitAnswer = useCallback((isCorrect, timeTakenForLevel = 10) => {
