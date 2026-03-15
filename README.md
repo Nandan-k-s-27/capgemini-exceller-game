@@ -256,6 +256,10 @@ npm run lint
 
 ![Grid Challenge](screenshots/Grid_challenge.png)
 
+### Motion Challenge
+
+![Motion Challenge](screenshots/Motion_challenge.png)
+
 ### Inductive Reasoning
 
 ![Inductive Reasoning](screenshots/Inductive_reasoning.png)
@@ -270,11 +274,11 @@ npm run lint
 
 ## Gameplay Video
 
-### Motion Challenge Demo
+### Full Website Demo (All Games)
 
-- Direct file link: [Motion_challenge.mp4](screenshots/Motion_challenge.mp4)
+- Direct file link: [Demo_video.mp4](screenshots/Demo_video.mp4)
 
-<video src="screenshots/Motion_challenge.mp4" controls width="900"></video>
+<video src="screenshots/Demo_video.mp4" controls width="900"></video>
 
 ## Gameplay Flow
 
